@@ -2,8 +2,18 @@ import prisma from "./prismaClient.js";
 
 export const getAllUsers = async (filters = {}) => {
   const where = {};
-  if (filters.username) where.username = filters.username;
-  if (filters.email) where.email = filters.email;
+
+  if (filters.username) {
+    where.username = {
+      contains: filters.username,
+      mode: "insensitive",
+    };
+  }
+
+  if (filters.email) {
+    where.email = filters.email;
+  }
+
   return prisma.user.findMany({
     where,
     select: {
@@ -46,4 +56,6 @@ export const deleteUserWithDependencies = async (id) => {
 };
 
 export const findUserForAuth = (username) =>
-  prisma.user.findFirst({ where: { username } });
+  prisma.user.findFirst({
+    where: { username },
+  });

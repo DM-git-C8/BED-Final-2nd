@@ -8,6 +8,14 @@ router.get("/", async (req, res, next) => {
   try {
     const { username, email } = req.query;
     const users = await usersService.getAllUsers({ username, email });
+
+    // NEW: 404 if no user matches
+    if (!users || users.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No users found matching the provided filters" });
+    }
+
     res.json(users);
   } catch (err) {
     next(err);
@@ -40,6 +48,11 @@ router.get("/:id", async (req, res, next) => {
 router.put("/:id", authenticate, async (req, res, next) => {
   try {
     const updated = await usersService.updateUser(req.params.id, req.body);
+
+    if (!updated) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     res.json(updated);
   } catch (err) {
     next(err);
@@ -48,7 +61,14 @@ router.put("/:id", authenticate, async (req, res, next) => {
 
 router.delete("/:id", authenticate, async (req, res, next) => {
   try {
-    await usersService.deleteUserWithDependencies(req.params.id);
+    const deleted = await usersService.deleteUserWithDependencies(
+      req.params.id
+    );
+
+    if (!deleted) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     res.json({ message: "User deleted" });
   } catch (err) {
     next(err);

@@ -2,15 +2,34 @@ import prisma from "./prismaClient.js";
 
 export const getAllProperties = async (filters = {}) => {
   const where = {};
-  if (filters.location)
-    where.location = { contains: filters.location, mode: "insensitive" };
-  if (filters.pricePerNight)
-    where.pricePerNight = Number(filters.pricePerNight);
-  return prisma.property.findMany({ where, include: { reviews: true } });
+
+  if (filters.location) {
+    where.location = {
+      contains: filters.location,
+      mode: "insensitive",
+    };
+  }
+
+  if (filters.pricePerNight !== undefined) {
+    const price = Number(filters.pricePerNight);
+
+    // LESS THAN OR EQUAL TO
+    where.pricePerNight = {
+      lte: price,
+    };
+  }
+
+  return prisma.property.findMany({
+    where,
+    include: { reviews: true },
+  });
 };
 
 export const getPropertyById = (id) =>
-  prisma.property.findUnique({ where: { id }, include: { reviews: true } });
+  prisma.property.findUnique({
+    where: { id },
+    include: { reviews: true },
+  });
 
 export const createProperty = (data) => prisma.property.create({ data });
 

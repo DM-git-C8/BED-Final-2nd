@@ -8,6 +8,14 @@ router.get("/", async (req, res, next) => {
   try {
     const { name } = req.query;
     const hosts = await hostsService.getAllHosts({ name });
+
+    // NEW: 404 if no host found
+    if (!hosts || hosts.length === 0) {
+      return res.status(404).json({
+        message: "No hosts found matching the given name filter",
+      });
+    }
+
     res.json(hosts);
   } catch (err) {
     next(err);
@@ -40,6 +48,11 @@ router.get("/:id", async (req, res, next) => {
 router.put("/:id", authenticate, async (req, res, next) => {
   try {
     const updated = await hostsService.updateHost(req.params.id, req.body);
+
+    if (!updated) {
+      return res.status(404).json({ message: "Host not found" });
+    }
+
     res.json(updated);
   } catch (err) {
     next(err);
@@ -48,7 +61,14 @@ router.put("/:id", authenticate, async (req, res, next) => {
 
 router.delete("/:id", authenticate, async (req, res, next) => {
   try {
-    await hostsService.deleteHostWithDependencies(req.params.id);
+    const deleted = await hostsService.deleteHostWithDependencies(
+      req.params.id
+    );
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Host not found" });
+    }
+
     res.json({ message: "Host deleted" });
   } catch (err) {
     next(err);

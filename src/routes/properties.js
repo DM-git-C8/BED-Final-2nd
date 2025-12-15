@@ -7,10 +7,19 @@ const router = express.Router();
 router.get("/", async (req, res, next) => {
   try {
     const { location, pricePerNight } = req.query;
+
     const props = await propertiesService.getAllProperties({
       location,
       pricePerNight,
     });
+
+    // NEW: return 404 if no matches
+    if (!props || props.length === 0) {
+      return res.status(404).json({
+        message: "No properties found matching the given filters",
+      });
+    }
+
     res.json(props);
   } catch (err) {
     next(err);
@@ -62,6 +71,11 @@ router.put("/:id", authenticate, async (req, res, next) => {
       req.params.id,
       req.body
     );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Property not found" });
+    }
+
     res.json(updated);
   } catch (err) {
     next(err);
@@ -70,7 +84,12 @@ router.put("/:id", authenticate, async (req, res, next) => {
 
 router.delete("/:id", authenticate, async (req, res, next) => {
   try {
-    await propertiesService.deleteProperty(req.params.id);
+    const deleted = await propertiesService.deleteProperty(req.params.id);
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Property not found" });
+    }
+
     res.json({ message: "Property deleted" });
   } catch (err) {
     next(err);
