@@ -5,7 +5,7 @@ export const getAllHosts = async (filters = {}) => {
 
   if (filters.name) {
     where.name = {
-      contains: filters.name,
+      equals: filters.name,
       mode: "insensitive",
     };
   }

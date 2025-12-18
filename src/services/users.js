@@ -4,10 +4,7 @@ export const getAllUsers = async (filters = {}) => {
   const where = {};
 
   if (filters.username) {
-    where.username = {
-      contains: filters.username,
-      mode: "insensitive",
-    };
+    where.username = filters.username;
   }
 
   if (filters.email) {
@@ -56,6 +53,4 @@ export const deleteUserWithDependencies = async (id) => {
 };
 
 export const findUserForAuth = (username) =>
-  prisma.user.findFirst({
-    where: { username },
-  });
+  prisma.user.findFirst({ where: { username } });
