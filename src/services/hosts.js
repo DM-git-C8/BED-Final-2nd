@@ -5,15 +5,13 @@ export const getAllHosts = async (filters = {}) => {
 
   if (filters.name) {
     where.name = {
-      equals: filters.name,
-      mode: "insensitive",
+      contains: String(filters.name),
     };
   }
 
   return prisma.host.findMany({
     where,
     select: {
-      password: false,
       id: true,
       username: true,
       name: true,

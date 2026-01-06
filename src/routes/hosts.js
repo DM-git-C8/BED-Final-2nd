@@ -4,18 +4,22 @@ import { authenticate } from "../middleware/auth.js";
 
 const router = express.Router();
 
+/**
+ * GET /hosts
+ * Optional query params:
+ * - name
+ *
+ * Always returns 200 with an array (possibly empty)
+ */
 router.get("/", async (req, res, next) => {
   try {
     const { name } = req.query;
+
     const hosts = await hostsService.getAllHosts({ name });
 
-    // NEW: 404 if no host found
-    if (!hosts || hosts.length === 0) {
-      return res.status(404).json({
-        message: "No hosts found matching the given name filter",
-      });
-    }
-
+    // IMPORTANT:
+    // Filters should NEVER return 404
+    // An empty result set is valid
     res.json(hosts);
   } catch (err) {
     next(err);
@@ -25,9 +29,11 @@ router.get("/", async (req, res, next) => {
 router.post("/", authenticate, async (req, res, next) => {
   try {
     const { username, password, name, email } = req.body;
+
     if (!username || !password || !name || !email) {
       return res.status(400).json({ message: "Missing required fields" });
     }
+
     const created = await hostsService.createHost(req.body);
     res.status(201).json(created);
   } catch (err) {
@@ -38,7 +44,11 @@ router.post("/", authenticate, async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
   try {
     const host = await hostsService.getHostById(req.params.id);
-    if (!host) return res.status(404).json({ message: "Host not found" });
+
+    if (!host) {
+      return res.status(404).json({ message: "Host not found" });
+    }
+
     res.json(host);
   } catch (err) {
     next(err);

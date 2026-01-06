@@ -5,13 +5,18 @@ export const getAllProperties = async (filters = {}) => {
 
   if (filters.location) {
     where.location = {
-      equals: filters.location,
-      mode: "insensitive",
+      contains: String(filters.location),
     };
   }
 
   if (filters.pricePerNight !== undefined) {
-    where.pricePerNight = Number(filters.pricePerNight);
+    const price = Number(filters.pricePerNight);
+
+    if (!isNaN(price)) {
+      where.pricePerNight = {
+        lte: price,
+      };
+    }
   }
 
   return prisma.property.findMany({

@@ -4,6 +4,14 @@ import { authenticate } from "../middleware/auth.js";
 
 const router = express.Router();
 
+/**
+ * GET /properties
+ * Optional query params:
+ * - location
+ * - pricePerNight
+ *
+ * Always returns 200 with an array (possibly empty)
+ */
 router.get("/", async (req, res, next) => {
   try {
     const { location, pricePerNight } = req.query;
@@ -13,13 +21,9 @@ router.get("/", async (req, res, next) => {
       pricePerNight,
     });
 
-    // NEW: return 404 if no matches
-    if (!props || props.length === 0) {
-      return res.status(404).json({
-        message: "No properties found matching the given filters",
-      });
-    }
-
+    // IMPORTANT:
+    // Filters should NEVER return 404
+    // An empty result set is valid
     res.json(props);
   } catch (err) {
     next(err);
@@ -37,6 +41,7 @@ router.post("/", authenticate, async (req, res, next) => {
       maxGuestCount,
       hostId,
     } = req.body;
+
     if (
       !title ||
       !location ||
@@ -48,6 +53,7 @@ router.post("/", authenticate, async (req, res, next) => {
     ) {
       return res.status(400).json({ message: "Missing required fields" });
     }
+
     const created = await propertiesService.createProperty(req.body);
     res.status(201).json(created);
   } catch (err) {
@@ -58,7 +64,11 @@ router.post("/", authenticate, async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
   try {
     const prop = await propertiesService.getPropertyById(req.params.id);
-    if (!prop) return res.status(404).json({ message: "Property not found" });
+
+    if (!prop) {
+      return res.status(404).json({ message: "Property not found" });
+    }
+
     res.json(prop);
   } catch (err) {
     next(err);
