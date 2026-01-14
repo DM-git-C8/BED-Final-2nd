@@ -8,6 +8,11 @@ router.get("/", async (req, res, next) => {
   try {
     const { userId } = req.query;
     const bookings = await bookingsService.getAllBookings({ userId });
+    if (userId && (!bookings || bookings.length === 0)) {
+      return res
+        .status(404)
+        .json({ message: "No bookings found for this user" });
+    }
     res.json(bookings);
   } catch (err) {
     next(err);

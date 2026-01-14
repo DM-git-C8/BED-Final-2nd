@@ -4,14 +4,6 @@ import { authenticate } from "../middleware/auth.js";
 
 const router = express.Router();
 
-/**
- * GET /properties
- * Optional query params:
- * - location
- * - pricePerNight
- *
- * Always returns 200 with an array (possibly empty)
- */
 router.get("/", async (req, res, next) => {
   try {
     const { location, pricePerNight } = req.query;
@@ -21,9 +13,15 @@ router.get("/", async (req, res, next) => {
       pricePerNight,
     });
 
-    // IMPORTANT:
-    // Filters should NEVER return 404
-    // An empty result set is valid
+    // If the caller provided a filter and nothing matched, return 404
+    if ((location || pricePerNight) && (!props || props.length === 0)) {
+      console.debug("GET /properties - filters provided but no results", {
+        location,
+        pricePerNight,
+      });
+      return res.status(404).json({ message: "No matching properties found" });
+    }
+
     res.json(props);
   } catch (err) {
     next(err);

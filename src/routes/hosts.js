@@ -4,22 +4,17 @@ import { authenticate } from "../middleware/auth.js";
 
 const router = express.Router();
 
-/**
- * GET /hosts
- * Optional query params:
- * - name
- *
- * Always returns 200 with an array (possibly empty)
- */
 router.get("/", async (req, res, next) => {
   try {
     const { name } = req.query;
 
     const hosts = await hostsService.getAllHosts({ name });
 
-    // IMPORTANT:
-    // Filters should NEVER return 404
-    // An empty result set is valid
+    // If a name filter is provided and nothing matches, return 404
+    if (name && (!hosts || hosts.length === 0)) {
+      return res.status(404).json({ message: "Host not found" });
+    }
+
     res.json(hosts);
   } catch (err) {
     next(err);

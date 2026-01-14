@@ -13,9 +13,8 @@ export const getAllProperties = async (filters = {}) => {
     const price = Number(filters.pricePerNight);
 
     if (!isNaN(price)) {
-      where.pricePerNight = {
-        lte: price,
-      };
+      // Match properties with exactly this price per night
+      where.pricePerNight = price;
     }
   }
 

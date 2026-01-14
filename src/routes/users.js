@@ -9,11 +9,9 @@ router.get("/", async (req, res, next) => {
     const { username, email } = req.query;
     const users = await usersService.getAllUsers({ username, email });
 
-    // NEW: 404 if no user matches
-    if (!users || users.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No users found matching the provided filters" });
+    // If username or email filter provided and nothing matches, return 404
+    if ((username || email) && (!users || users.length === 0)) {
+      return res.status(404).json({ message: "User not found" });
     }
 
     res.json(users);
